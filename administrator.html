@@ -1,0 +1,143 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administrator Access</title>
+  <style>
+    :root {
+      --bg-start: #0b1f3a;
+      --bg-end: #1d4e89;
+      --card: rgba(255, 255, 255, 0.12);
+      --text: #f6f9ff;
+      --accent: #f4b400;
+      --accent-hover: #ffca36;
+      --shadow: 0 18px 45px rgba(8, 17, 34, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      position: relative;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: url('bg.png') center/cover no-repeat fixed;
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .logo-wrapper {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 22px;
+      box-shadow: 0 18px 35px rgba(0, 0, 0, 0.25);
+      margin-bottom: 24px;
+    }
+
+    .logo-wrapper img {
+      width: 160px;
+      height: auto;
+      display: block;
+    }
+
+    .container {
+      width: min(760px, 100%);
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 20px;
+      padding: 36px 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      text-align: center;
+    }
+
+    h1 {
+      font-family: "Segoe UI", "Segoe UI Variable", "Helvetica Neue", Arial, sans-serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      letter-spacing: 0.02em;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    p {
+      font-size: 1.2rem;
+      opacity: 0.92;
+      margin-bottom: 28px;
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .action-link {
+      text-decoration: none;
+      color: #13213d;
+      background: var(--accent);
+      font-weight: 700;
+      border-radius: 12px;
+      padding: 18px 16px;
+      transition: transform 0.2s ease, background 0.2s ease;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .action-link:hover,
+    .action-link:focus-visible {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      outline: none;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      text-decoration: none;
+      color: white;
+      opacity: 0.88;
+      font-size: 0.95rem;
+    }
+
+    .back-link:hover,
+    .back-link:focus-visible {
+      opacity: 1;
+      text-decoration: underline;
+    }
+
+    @media (max-width: 520px) {
+      .container {
+        padding: 28px 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo-wrapper">
+    <img src="UPlogo.png" alt="UnitedPulse logo" />
+  </div>
+  <main class="container">
+    <h1>Administrator Access</h1>
+    <p>Please choose one of the options below to continue.</p>
+    <div class="action-grid" aria-label="Administrator access options">
+      <a class="action-link" href="alogin.html">LOGIN</a>
+      <a class="action-link" href="asignup.html">SIGN UP</a>
+    </div>
+    <a class="back-link" href="index.html">← Return to the main menu</a>
+  </main>
+</body>
+</html>
