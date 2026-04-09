@@ -263,9 +263,33 @@
   </main>
 
   <script>
-    document.getElementById('signupForm').addEventListener('submit', function(e) {
+    document.getElementById('signupForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      alert('Sign up successful! A passkey has been sent to your email address.');
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData);
+      data.phoneNumber = data.mobile;
+      data.organizationName = data['org-name'];
+      data.organizationalEmail = data['org-email'];
+      delete data.mobile;
+      delete data['org-name'];
+      delete data['org-email'];
+      
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/administrator/signup', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (response.ok) {
+          alert(`Success! Passkey: ${result.passkey || 'sent to email'}`);
+          window.location.href = 'alogin.html';
+        } else {
+          alert('Error: ' + result.error);
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
     });
   </script>
 </body>

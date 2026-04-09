@@ -201,6 +201,32 @@
       <a href="administrator.html">← Back to Administrator</a>
     </div>
   </main>
+
+  <script>
+    document.querySelector('form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData);
+      
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/administrator/login', {
+           method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({email: data.name, password: data.password, passkey: data.passkey}) // backend uses email for lookup
+        });
+        const result = await response.json();
+        if (response.ok) {
+          alert(`Welcome ${result.name}!`);
+          localStorage.setItem('token', result.token);
+          window.location.href = 'administrator.html';
+        } else {
+          alert('Login failed: ' + result.error);
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    });
+  </script>
 </body>
 </html>
 

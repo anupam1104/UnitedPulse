@@ -24,7 +24,7 @@
     body {
       min-height: 100vh;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: url("html.pg.png") center/cover no-repeat,
+      background: url("lbg.jpeg") center/cover no-repeat,
         linear-gradient(135deg, var(--bg-start), var(--bg-end));
       color: var(--text);
       display: grid;
@@ -109,7 +109,29 @@
         padding: 28px 18px;
       }
     }
+
+    .bottom-logo {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1000;
+      opacity: 0.9;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      object-fit: cover;
+    }
+
+    .bottom-logo:hover {
+      transform: scale(1.05);
+      opacity: 1;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    }
   </style>
+
 </head>
 <body>
   <h1>UnitedPulse Portal</h1>
@@ -127,5 +149,7 @@
       <a class="nav-link" href="administrator.html">ADMINISTRATOR</a>
     </nav>
   </main>
+  <img src="UPlogo.png" alt="UnitedPulse" class="bottom-logo">
 </body>
+
 </html>

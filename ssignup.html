@@ -253,6 +253,37 @@
       <a href="surveyor.html">← Return to Surveyor</a>
     </div>
   </main>
+
+  <script>
+    document.querySelector('form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData);
+      data.phoneNumber = data.mobile;
+      data.organizationName = data['org-name'];
+      data.organizationalEmail = data['org-email'];
+      delete data.mobile;
+      delete data['org-name'];
+      delete data['org-email'];
+      
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/surveyor/signup', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (response.ok) {
+          alert('Surveyor signup successful!');
+          window.location.href = 'slogin.html';
+        } else {
+          alert('Error: ' + result.error);
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    });
+  </script>
 </body>
 </html>
 

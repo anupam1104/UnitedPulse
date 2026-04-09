@@ -196,6 +196,33 @@
       <a href="surveyor.html">← Return to Surveyor</a>
     </div>
   </main>
+
+  <script>
+    document.querySelector('form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData);
+      data.email = data.username || data.name;
+      
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/surveyor/login', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({email: data.email, password: data.password})
+        });
+        const result = await response.json();
+        if (response.ok) {
+          alert(`Welcome ${result.name}!`);
+          localStorage.setItem('token', result.token);
+          window.location.href = 'surveyor.html';
+        } else {
+          alert('Login failed: ' + result.error);
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    });
+  </script>
 </body>
 </html>
 
