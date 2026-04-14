@@ -39,12 +39,6 @@ All keypoints and TODO progress from project .md files have been consolidated he
 - ✅ Improved text visibility colors
 - ✅ Test and complete - Mostly done
 
-## Original TODO References
-- [Backend Auth](TODO-BACKEND.md)
-- [BG Update](TODO-BG-UPDATE.md)
-- [Dashboard Style](TODO-DASHBOARD-STYLE.md)
-- [Password Toggle](TODO-PASSWORD-TOGGLE.md)
-- [Refinements](TODO-REFINEMENTS.md)
-- [pdash Specific](TODO.md)
+
 
 **Status:** All keypoints centralized. Project shows strong frontend progress (dashboards complete), backend auth mostly done (needs testing).
