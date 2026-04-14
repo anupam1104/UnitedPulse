@@ -25,7 +25,7 @@
       min-height: 100vh;
       position: relative;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: url('bg1.png') center/cover no-repeat fixed;
+      background: url('bg3.jpeg') center/cover no-repeat fixed;
       color: var(--text);
       display: grid;
       place-items: center;
@@ -120,6 +120,39 @@
 
     input::placeholder, textarea::placeholder {
       color: rgba(246, 249, 255, 0.6);
+    }
+
+    .password-group {
+      position: relative;
+    }
+
+    .password-container {
+      position: relative;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: var(--text);
+      font-size: 1.2rem;
+      user-select: none;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .toggle-password:hover {
+      opacity: 1;
+    }
+
+    input[type="password"] + .toggle-password::after {
+      content: "👁";
+    }
+
+    input[type="text"] + .toggle-password::after {
+      content: "🙈";
     }
 
     .button-row {
@@ -231,9 +264,12 @@
 
       <fieldset>
         <legend>Security</legend>
-        <div>
+        <div class="password-group">
           <label for="password">Password</label>
-          <input id="password" name="password" type="password" placeholder="Create a password" required />
+          <div class="password-container">
+            <input id="password" name="password" type="password" placeholder="Create a password" required />
+            <span class="toggle-password" onclick="togglePassword('password')">👁</span>
+          </div>
         </div>
         <div>
           <label for="security">Security Question</label>
@@ -291,6 +327,18 @@
         alert('Network error: ' + err.message);
       }
     });
+
+    function togglePassword(id) {
+      const password = document.getElementById(id);
+      const toggle = password.nextElementSibling;
+      if (password.type === 'password') {
+        password.type = 'text';
+        toggle.textContent = '🙈';
+      } else {
+        password.type = 'password';
+        toggle.textContent = '👁';
+      }
+    }
   </script>
 </body>
 </html>
