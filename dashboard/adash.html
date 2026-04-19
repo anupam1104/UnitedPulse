@@ -38,6 +38,7 @@ body {
 
 .nav-item {
   padding: 12px;
+  color:white;
   border-radius: 10px;
   margin-bottom: 10px;
   cursor: pointer;
@@ -46,10 +47,10 @@ body {
   font-weight: 500;
 }
 .nav-item:hover { background:rgba(255,255,255,0.15); }
-.nav-item.active { background:rgba(255,255,255,0.25); }
-a.nav-item { 
-  color: var(--text-primary, white); 
-  text-decoration: none; 
+
+.sidebar a, a.nav-item { 
+  color: white; 
+  text-decoration: none !important; 
 }
 
 
@@ -143,13 +144,22 @@ th, td {
     <img src="../UPlogo.png">
     <h2>UnitedPulse</h2>
   </div>
+<a href="../backend/adash.html">
+  <div class="nav-item active"><strong>Dashboard</strong></div>
+</a>
+  <a href="../dashboard/complaints.html">
+    <div class="nav-item"><strong>Complaints</strong></div>
+  </a>
+  <a href="../dashboard/ngo.html">
+    <div class="nav-item"><strong>NGO</strong></div>    
+  </a>
+  <a href="../dashboard/analysis.html">
+    <div class="nav-item"><strong>Analytics</strong></div>
+  </a>
+  <div style="margin-top: 20px;"></div>
 
-  <div class="nav-item active">Dashboard</div>
-  <div class="nav-item">Complaints</div>
-  <div class="nav-item">NGOs</div>
-  <div class="nav-item">Analytics</div>
-  <a href="../index.html" class="nav-item" style="margin-top: 10px;">
-    <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> LogOut
+  <a href="../index.html" class="nav-item" >
+    <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i><strong>LogOut</strong> 
   </a>
 </aside>
 
@@ -170,7 +180,7 @@ th, td {
 
 <!-- Table -->
 <div class="table">
-  <h3>Manage Complaints</h3>
+  <h3>Recent Complaints</h3>
 
   <!-- Filters -->
   <div style="margin-bottom:10px;">

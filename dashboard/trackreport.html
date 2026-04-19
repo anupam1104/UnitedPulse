@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UnitedPulse | Track Reports</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+ body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-image: url('bg4.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--text-primary);
+}
+/*SIDEBAR*/
+  .container {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+  width: 240px;
+  background: linear-gradient(180deg, #421b4b, #0e1467);
+  color: white;
+  padding: 24px;
+}
+.logo { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; }
+.logo img { width: 40px; }
+.nav-item {
+  padding: 12px;
+  color: white;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 1.05em;
+  font-weight: 500;
+}
+  .nav-item:hover { background: rgba(255,255,255,0.15); 
+}
+
+.sidebar a { 
+  text-decoration: none; 
+}
+
+.sidebar a .nav-item { 
+  color: var(--text-primary, white); 
+  text-decoration: none !important; 
+}
+
+/* Content */
+.content { flex: 1; padding: 30px; }
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+header h1 { margin: 0; }
+
+/* Button + theme toggle */
+.btn {
+  background: linear-gradient(180deg, #1e1b4b, #1e3a8a);
+  color: white;
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  margin-bottom:20px;
+}
+
+/* Table Container */
+.table {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  margin-top: 40px;
+}
+
+/* Table */
+table {
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  width: 100%;
+  border-collapse: collapse;
+  color: #f8fafc;
+  font-size: 0.95rem;
+}
+
+/* Header */
+th {
+  text-align: left;
+  padding: 14px;
+  font-weight: 600;
+  color: #94a3b8;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+}
+
+/* Cells */
+td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Hover effect */
+tr:hover {
+  background: rgba(255,255,255,0.05);
+  transition: 0.2s;
+}
+
+/* Center Date Column */
+td:nth-child(2), th:nth-child(2) {
+  text-align: center;
+}
+
+/* Status Badges */
+.status {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  display: inline-block;
+}
+
+/* Status Colors */
+.review {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.progress {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.resolved {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+/* NGO dash (—) styling */
+td:has(> span:empty),
+td:empty {
+  opacity: 0.6;
+}
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="container">  
+  <aside class="sidebar">
+  <div class="logo">
+    <img src="../UPlogo.png">
+    <h2>UnitedPulse</h2>
+  </div>
+  <a href="../dashboard/sdash.html" >
+    <div class="nav-item active"><strong>Dashboard</strong></div>
+  </a>
+  <a href="../dashboard/sprofile.html">
+    <div class="nav-item"><strong>Profile</strong></div>
+  </a>
+  
+  <div style="margin-top: 20px;"></div>
+  <a href="../dashboard/trackreport.html" class="nav-item"><i class="fas-fa-sign-out-alt" ></i><strong>Track Reports</strong></a>
+  <div style="margin-top: 40px;"></div>
+  <a href="../index.html" class="nav-item">
+    <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i><strong> LogOut</strong>
+  </a>
+
+</aside>
+
+<!-- Content -->
+<main class="content">
+
+<header>
+  <h1>Track Reports</h1>
+  <div>
+    <button class="btn" onclick="openModal()">🔍 Search</button>
+  </div>
+</header>
+
+<table>
+  <tr>
+    <th>Report Name</th>
+    <th>Date</th>
+    <th>Status</th>
+    <th>NGO Assigned</th>
+  </tr>
+
+  <tr>
+    <td>Water issue - Haldia</td>
+    <td>12 Apr</td>
+    <td>Under Review</td>
+    <td>—</td>
+  </tr>
+
+  <tr>
+    <td>Road damage</td>
+    <td>10 Apr</td>
+    <td>Resolved</td>
+    <td>Helping Hands</td>
+  </tr>
+</table>
+
+</html>

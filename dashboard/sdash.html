@@ -57,12 +57,17 @@ body {
   transition: 0.3s;
   font-size: 1.05em;
   font-weight: 500;
+  color: white;
 }
 .nav-item:hover { background: rgba(255,255,255,0.15); }
-.nav-item.active { background: rgba(255,255,255,0.25); }
-a.nav-item { 
-  color: var(--text-primary, white); 
+
+.sidebar a { 
   text-decoration: none; 
+}
+
+.sidebar a .nav-item { 
+  color: var(--text-primary, white); 
+  text-decoration: none !important; 
 }
 
 /* Content - original */
@@ -193,13 +198,18 @@ header h1 { margin: 0; }
     <img src="../UPlogo.png">
     <h2>UnitedPulse</h2>
   </div>
-
-  <div class="nav-item active">Dashboard</div>
-  <div class="nav-item">Profile</div>
-  <div class="nav-item">Track Reports</div>
+  
+  <div class="nav-item active"><strong>Dashboard</strong></div>
+  
+  <a href="../dashboard/sprofile.html">
+    <div class="nav-item"><strong>Profile</strong></div>
+  </a>
+  
   <div style="margin-top: 20px;"></div>
+  <a href="../dashboard/trackreport.html" class="nav-item"><i class="fas-fa-sign-out-alt" ></i><strong>Track Reports</strong></a>
+  <div style="margin-top: 40px;"></div>
   <a href="../index.html" class="nav-item">
-    <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> LogOut
+    <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i><strong>LogOut</strong>
   </a>
 
 </aside>
@@ -255,6 +265,7 @@ header h1 { margin: 0; }
 <div class="modal" id="modal">
 <div class="modal-box">
     <h3><i class="fas fa-plus-circle"></i> Add Field Report</h3>
+<input id="reportName" placeholder="Report Name *" required style="width: 100%; margin-bottom: 15px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: rgba(255,255,255,0.1); color: white;">
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
       <input id="surveyorName" placeholder="Name of Surveyor *" required>
       <input id="surveyDate" type="date" placeholder="Date of Survey *" required>
@@ -295,6 +306,7 @@ function closeModal() {
 
 function saveDraft() {
   draftData = {
+    reportName: document.getElementById('reportName').value,
     surveyorName: document.getElementById('surveyorName').value,
     surveyDate: document.getElementById('surveyDate').value,
     areaSurveyed: document.getElementById('areaSurveyed').value,
@@ -308,19 +320,19 @@ function saveDraft() {
 function loadDraft() {
   const saved = localStorage.getItem('surveyDraft');
   if (saved) {
-    draftData = JSON.stringify(saved);
     const data = JSON.parse(saved);
-    document.getElementById('surveyorName').value = data.surveyorName;
-    document.getElementById('surveyDate').value = data.surveyDate;
-    document.getElementById('areaSurveyed').value = data.areaSurveyed;
-    document.getElementById('problemsNoticed').value = data.problemsNoticed;
-    document.getElementById('description').value = data.description;
+    document.getElementById('reportName').value = data.reportName || '';
+    document.getElementById('surveyorName').value = data.surveyorName || '';
+    document.getElementById('surveyDate').value = data.surveyDate || '';
+    document.getElementById('areaSurveyed').value = data.areaSurveyed || '';
+    document.getElementById('problemsNoticed').value = data.problemsNoticed || '';
+    document.getElementById('description').value = data.description || '';
   }
 }
 
 function submitReport() {
   const formData = new FormData();
-  const fields = ['surveyorName', 'surveyDate', 'areaSurveyed', 'problemsNoticed', 'description'];
+  const fields = ['reportName', 'surveyorName', 'surveyDate', 'areaSurveyed', 'problemsNoticed', 'description'];
   let valid = true;
   fields.forEach(id => {
     const value = document.getElementById(id).value.trim();
