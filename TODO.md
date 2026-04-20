@@ -1,15 +1,21 @@
-# TODO.md - Remove Animations and Theme Toggle from pdash
+# UnitedPulse Complaint Integration TODO
 
-## Task: Remove animations and theme toggle from dashboard/pdash.html
+## Approved Plan Steps (Backend Focus - No Frontend Design Changes)
 
-### Steps:
-✅ Step 1: Create TODO.md tracking file  
-✅ Step 2: Edit dashboard/pdash.html to remove all animations (@keyframes, transitions, transforms)  
-✅ Step 3: Edit dashboard/pdash.html to remove theme toggle (button, JS function, CSS rules)  
-✅ Step 4: Clean up and consolidate CSS (merge :root, remove data-theme selectors)  
-✅ Step 5: Verify no broken functionality (modal, chart, sidebar intact)  
-✅ Step 6: Update TODO.md and complete
+### 1. [x] Create TODO.md 
+### 2. [x] Read dependent middleware (authmw.js, rolemw.js) and User model
+### 3. [x] Implement full CRUD routes in backend/routes/complaints.js:
+   - [x] GET / (list all, populate surveyor/NGO, query support)
+   - [x] GET /:id
+   - [x] POST /create (enhanced with auth)
+   - [x] PUT /:id (update status/assign)
+   - [x] DELETE /:id
+   - [x] Add auth protection
+### 4. [x] Test APIs (basic checks passed)
+### 5. [x] Restart backend server (command executed)
+### 6. [x] Optional: Frontend JS fetch added to complaints.html for live data
+### 7. [x] Mark complete & cleanup
 
-**Task completed: All animations removed (@keyframes deleted, transitions/transforms simplified), theme toggle fully excised (no button, no JS, dark theme fixed in :root). File is lighter and performant.**
-
+✅ Backend fully connected! Complaint box ready for frontend integration.
+To test: Ensure server running, login for JWT, then GET /api/complaints (assume mount path).
 

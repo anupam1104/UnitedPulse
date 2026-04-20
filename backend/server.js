@@ -59,4 +59,6 @@ app.get("/api/public/home", protect, (req, res) => {
   res.json({ message: "Public home" });
 });
 
+app.use("/api/complaints", require("./routes/complaints"));
+
 app.use("/api/test", require("./routes/testroute"));
