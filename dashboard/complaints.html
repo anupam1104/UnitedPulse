@@ -1,223 +1,394 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UnitedPulse | Admin Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UnitedPulse | Complaints Management</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-<style>
- body {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-  background-image: url('bg4.jpeg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  color: var(--text-primary);
-}
-/*SIDEBAR*/
-  .container {
-    display: flex;
-    min-height: 100vh;
-  }
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-image: url('bg4.jpeg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      color: white;
+    }
 
-  .sidebar {
-  width: 240px;
-  background: linear-gradient(180deg, #421b4b, #0e1467);
-  color: white;
-  padding: 24px;
-}
-.logo { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; }
-.logo img { width: 40px; }
-.nav-item {
-  padding: 12px;
-  color: white;
-  border-radius: 10px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  transition: 0.3s;
-  font-size: 1.05em;
-  font-weight: 500;
-}
-  .nav-item:hover { background: rgba(255,255,255,0.15); 
-}
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
 
-.sidebar a { 
-  text-decoration: none; 
-}
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px;
+      background: linear-gradient(180deg, #421b4b, #0e1467);
+      color: white;
+      padding: 24px;
+      flex-shrink: 0;
+    }
 
-.sidebar a .nav-item { 
-  color: var(--text-primary, white); 
-  text-decoration: none !important; 
-}
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
 
-/* Content */
-.content { flex: 1; padding: 30px; }
+    .logo img { width: 40px; }
 
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: white;
-}
-header h1 { margin: 0; }
+    .nav-item {
+      padding: 12px;
+      color: white;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-size: 1.05em;
+      font-weight: 500;
+    }
 
-/* Button + theme toggle */
-.btn {
-  background: linear-gradient(180deg, #1e1b4b, #1e3a8a);
-  color: white;
-  padding: 12px 18px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  margin-bottom:20px;
-}
+    .nav-item:hover { background: rgba(255, 255, 255, 0.15); }
 
-/* Table Container */
-.table {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  padding: 20px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.15);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  margin-top: 40px;
-}
+    .sidebar a { text-decoration: none; }
+    .sidebar a .nav-item,
+    .sidebar a.nav-item { color: white; text-decoration: none !important; }
 
-/* Table */
-table {
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(12px);
-  width: 100%;
-  border-collapse: collapse;
-  color: #f8fafc;
-  font-size: 0.95rem;
-}
+    /* CONTENT */
+    .content { flex: 1; padding: 30px; }
 
-/* Header */
-th {
-  text-align: left;
-  padding: 14px;
-  font-weight: 600;
-  color: #94a3b8;
-  border-bottom: 1px solid rgba(255,255,255,0.2);
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 0.5px;
-}
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
 
-/* Cells */
-td {
-  padding: 14px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-}
+    header h1 { margin: 0; font-size: 1.8rem; }
 
-/* Hover effect */
-tr:hover {
-  background: rgba(255,255,255,0.05);
-  transition: 0.2s;
-}
+    /* CONTROLS */
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
 
-/* Center Date Column */
-td:nth-child(2), th:nth-child(2) {
-  text-align: center;
-}
+    .filter-select {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: white;
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      outline: none;
+    }
 
-/* Status Badges */
-.status {
-  padding: 5px 10px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: white;
-  display: inline-block;
-}
+    .filter-select option { background: #1e1b4b; }
 
+    .search-input {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: white;
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      outline: none;
+      width: 220px;
+    }
 
-/* NGO dash (—) styling */
-td:has(> span:empty),
-td:empty {
-  opacity: 0.6;
-}
-</style>
+    .search-input::placeholder { color: rgba(255,255,255,0.5); }
+
+    .btn-refresh {
+      background: linear-gradient(135deg, #421b4b, #0e1467);
+      color: white;
+      padding: 9px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.2);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+
+    .btn-refresh:hover { opacity: 0.85; }
+
+    /* TABLE WRAPPER */
+    .table-wrapper {
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      color: #f8fafc;
+      font-size: 0.92rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 14px 16px;
+      font-weight: 600;
+      color: #94a3b8;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.6px;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255, 255, 255, 0.04); }
+
+    /* STATUS BADGES */
+    .badge {
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: white;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .badge-pending  { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .badge-progress { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .badge-resolved { background: linear-gradient(135deg, #22c55e, #16a34a); }
+
+    /* EMPTY / LOADING STATES */
+    .state-row td {
+      text-align: center;
+      padding: 40px;
+      color: rgba(255,255,255,0.5);
+      font-size: 1rem;
+    }
+
+    /* COUNT */
+    .count-label {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 
 <body>
+  <div class="container">
 
-  <!-- Sidebar -->
-  <div class="container">  
-  <aside class="sidebar">
-  <div class="logo">
-    <img src="../UPlogo.png">
-    <h2>UnitedPulse</h2>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="logo">
+        <img src="../UPlogo.png" alt="UnitedPulse">
+        <h2>UnitedPulse</h2>
+      </div>
+      <a href="../dashboard/adash.html">
+        <div class="nav-item"><strong>Dashboard</strong></div>
+      </a>
+      <a href="../dashboard/rm.html">
+        <div class="nav-item"><strong>Reports Management</strong></div>
+      </a>
+      <a href="../dashboard/complaints.html">
+        <div class="nav-item" style="background:rgba(255,255,255,0.18);"><strong>Complaints Management</strong></div>
+      </a>
+      <a href="../dashboard/ngo.html">
+        <div class="nav-item"><strong>NGO</strong></div>
+      </a>
+      <div style="margin-top: 20px;"></div>
+      <a href="../dashboard/analysis.html" class="nav-item">
+        <i class="fas fa-chart-bar" style="margin-right:8px;"></i><strong>Analytics</strong>
+      </a>
+      <div style="margin-top: 40px;"></div>
+      <a href="../index.html" class="nav-item">
+        <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i><strong>LogOut</strong>
+      </a>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+
+      <header>
+        <h1><i class="fas fa-clipboard-list" style="margin-right:12px; color:#a78bfa;"></i>Complaints Management</h1>
+      </header>
+
+      <!-- FILTERS -->
+      <div class="controls">
+        <input class="search-input" id="searchInput" placeholder="🔍 Search by area or issue…" oninput="applyFilters()">
+
+        <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="in-progress">In Progress</option>
+          <option value="resolved">Resolved</option>
+        </select>
+
+        <select class="filter-select" id="categoryFilter" onchange="applyFilters()">
+          <option value="">All Categories</option>
+          <option value="Water Scarcity">Water Scarcity</option>
+          <option value="Healthcare">Healthcare</option>
+          <option value="Education">Education</option>
+          <option value="Roads">Roads</option>
+        </select>
+
+        <button class="btn-refresh" onclick="loadComplaints()">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+      </div>
+
+      <div class="count-label" id="countLabel"></div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Complainant / Details</th>
+              <th>Date</th>
+              <th>Area</th>
+              <th>Issue / Category</th>
+              <th>Status</th>
+              <th>NGO Assigned</th>
+            </tr>
+          </thead>
+          <tbody id="complaintsBody">
+            <tr class="state-row"><td colspan="6">⏳ Loading complaints…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </main>
   </div>
-  <a href="../dashboard/adash.html" >
-    <div class="nav-item active"><strong>Dashboard</strong></div>
-  </a>
-  <a href="../dashboard/complaints.html">
-    <div class="nav-item"><strong>Complaints</strong></div>
-  </a>
-  <a href="../dashboard/ngo.html">
-    <div class="nav-item"><strong>NGO</strong></div>
-  </a>
-  <div style="margin-top: 20px;"></div>
-  <a href="../dashboard/analysis.html" class="nav-item"><i class="fas-fa-sign-out-alt" ></i><strong>Analytics</strong></a>
-  <div style="margin-top: 40px;"></div>
-  <a href="../index.html" class="nav-item">
-    <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i><strong> LogOut</strong>
-  </a>
 
-</aside>
+  <script>
+    const API = 'http://localhost:5000/api/complaints';
+    let allComplaints = [];
 
-<!-- Content -->
-<main class="content">
+    // Get stored admin token (set during login)
+    function getToken() {
+      return localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+    }
 
-<header>
-  <h1>Manage Complaints</h1>
-  <div>
-    <button class="btn" onclick="openModal()">🔍 Search</button>
-  </div>
-</header>
+    function badgeClass(status) {
+      if (status === 'pending')     return 'badge-pending';
+      if (status === 'in-progress') return 'badge-progress';
+      if (status === 'resolved')    return 'badge-resolved';
+      return 'badge-pending';
+    }
 
-<table>
-  <tr>
-    <th>Surveyor Name</th>
-    <th>Report Name</th>
-    <th>Date</th>
-    <th>Area</th>
-    <th>Issue</th>
-    <th>Status</th>
-    <th>Action</th>
-    <th>NGO Assigned</th>
-  </tr>
+    function badgeLabel(status) {
+      if (status === 'pending')     return 'Pending';
+      if (status === 'in-progress') return 'In Progress';
+      if (status === 'resolved')    return 'Resolved';
+      return status;
+    }
 
-  <tr>
-    <td>Anupam Mishra</td>
-    <td>Report 13</td>
-    <td>12 Apr</td>
-    <td>Haldia</td>
-    <td>Water issue</td>
-    <td>Under Work</td>
-    <td>Approved</td>
-    <td>Helping Cross</td>
-  </tr>
+    function renderTable(items) {
+      const tbody = document.getElementById('complaintsBody');
+      document.getElementById('countLabel').textContent =
+        items.length === 0 ? '' : `Showing ${items.length} complaint${items.length !== 1 ? 's' : ''}`;
 
-  <tr>
-    <td>Rahul Ahuja</td>
-    <td>Report 9</td>
-    <td>10 Apr</td>
-    <td>Dum Dum</td>
-    <td>Road damage</td>
-    <td>Resolved</td>
-    <td>Approved</td>
-    <td>Helping Hands</td>
-  </tr>
-</table>
-</main>
-</div>
+      if (items.length === 0) {
+        tbody.innerHTML = '<tr class="state-row"><td colspan="6">📭 No complaints found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = items.map(c => {
+        // Extract name from description like "Complaint by John | Phone: ..."
+        const descParts = (c.description || '').split(' | ');
+        const nameMatch = descParts[0].replace('Complaint by ', '').trim();
+        const extraInfo = descParts.slice(1).join(' | ');
+
+        const dateStr = c.createdAt
+          ? new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })
+          : '—';
+
+        return `
+          <tr>
+            <td>
+              <strong>${nameMatch || '—'}</strong>
+              ${extraInfo ? `<br><span style="font-size:0.78rem;color:rgba(255,255,255,0.5);">${extraInfo}</span>` : ''}
+            </td>
+            <td>${dateStr}</td>
+            <td>${c.location || '—'}</td>
+            <td>${c.category || c.title || '—'}</td>
+            <td><span class="badge ${badgeClass(c.status)}">${badgeLabel(c.status)}</span></td>
+            <td>${c.assignedTo || '<span style="opacity:0.45;">—</span>'}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    function applyFilters() {
+      const search   = document.getElementById('searchInput').value.toLowerCase();
+      const status   = document.getElementById('statusFilter').value;
+      const category = document.getElementById('categoryFilter').value;
+
+      const filtered = allComplaints.filter(c => {
+        const matchSearch = !search ||
+          (c.location  || '').toLowerCase().includes(search) ||
+          (c.category  || '').toLowerCase().includes(search) ||
+          (c.title     || '').toLowerCase().includes(search) ||
+          (c.description || '').toLowerCase().includes(search);
+
+        const matchStatus   = !status   || c.status === status;
+        const matchCategory = !category || (c.category || c.title || '') === category;
+
+        return matchSearch && matchStatus && matchCategory;
+      });
+
+      renderTable(filtered);
+    }
+
+    async function loadComplaints() {
+      const tbody = document.getElementById('complaintsBody');
+      tbody.innerHTML = '<tr class="state-row"><td colspan="6">⏳ Loading complaints…</td></tr>';
+      document.getElementById('countLabel').textContent = '';
+
+      const token = getToken();
+
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch(API, { headers });
+
+        if (res.status === 401 || res.status === 403) {
+          tbody.innerHTML = `<tr class="state-row"><td colspan="6">🔒 Admin login required to view complaints.<br>
+            <small>Please log in as admin and ensure your token is stored.</small></td></tr>`;
+          return;
+        }
+
+        const data = await res.json();
+
+        // Support both { complaints: [...] } and direct array
+        allComplaints = Array.isArray(data) ? data : (data.complaints || []);
+        applyFilters();
+
+      } catch (err) {
+        tbody.innerHTML = `<tr class="state-row"><td colspan="6">❌ Could not reach server.<br>
+          <small>Is the backend running on port 5000?</small></td></tr>`;
+      }
+    }
+
+    // Load on page open
+    loadComplaints();
+  </script>
+
 </body>
 </html>

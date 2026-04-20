@@ -158,18 +158,6 @@
       display: inline-block;
     }
 
-    /* Status Colors */
-    .review {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-    }
-
-    .progress {
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    }
-
-    .resolved {
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-    }
 
     /* NGO dash (—) styling */
     td:has(> span:empty),
@@ -214,45 +202,47 @@
     <main class="content">
 
       <header>
-        <h1>NGO List</h1>
+        <h1>Reports Management</h1>
         <div>
           <button class="btn" onclick="openModal()">🔍 Search</button>
         </div>
       </header>
 
-
-
       <table>
-
         <tr>
-          <th>NGO Name</th>
-          <th>Specialization</th>
+          <th>Surveyor Name</th>
+          <th>Report Name</th>
+          <th>Date</th>
           <th>Area</th>
-          <th>Active Cases</th>
+          <th>Issue</th>
+          <th>Status</th>
+          <th>Action</th>
+          <th>NGO Assigned</th>
         </tr>
 
         <tr>
-          <td>Red Cross</td>
-          <td>Health</td>
-          <td>Kolkata</td>
-          <td>5</td>
-        </tr>
-
-        <tr>
-          <td>Helping Hands</td>
-          <td>Roads</td>
+          <td>Anupam Mishra</td>
+          <td>Report 13</td>
+          <td>12 Apr</td>
           <td>Haldia</td>
-          <td>3</td>
+          <td>Water issue</td>
+          <td>Under Work</td>
+          <td>Approved</td>
+          <td>Helping Cross</td>
         </tr>
 
         <tr>
-          <td>Water Aid</td>
-          <td>Water</td>
-          <td>Delhi</td>
-          <td>7</td>
+          <td>Rahul Ahuja</td>
+          <td>Report 9</td>
+          <td>10 Apr</td>
+          <td>Dum Dum</td>
+          <td>Road damage</td>
+          <td>Resolved</td>
+          <td>Approved</td>
+          <td>Helping Hands</td>
         </tr>
-
       </table>
+    </main>
   </div>
 </body>
 

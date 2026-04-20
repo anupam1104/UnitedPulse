@@ -4,6 +4,31 @@ const Complaint = require("../models/Complaint");
 const { protect } = require("../middleware/authmw");
 const { authorize } = require("../middleware/rolemw");
 
+// PUBLIC route - no auth required - for public complaint form on pdash.html
+router.post("/submit", async (req, res) => {
+  try {
+    const { name, phone, email, area, problem } = req.body;
+
+    if (!name || !area || !problem) {
+      return res.status(400).json({ error: "Name, area, and problem are required." });
+    }
+
+    const newComplaint = new Complaint({
+      title: problem,
+      description: `Complaint by ${name}${phone ? " | Phone: " + phone : ""}${email ? " | Email: " + email : ""}`,
+      category: problem,
+      location: area,
+      status: "pending"
+    });
+
+    await newComplaint.save();
+
+    res.status(201).json({ message: "Complaint submitted successfully", complaint: newComplaint });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET all complaints - for dashboard table
 router.get("/", protect, authorize(["admin", "surveyor"]), async (req, res) => {
   try {

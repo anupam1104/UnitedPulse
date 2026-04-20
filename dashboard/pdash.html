@@ -466,17 +466,49 @@ function toggleOther() {
   otherInput.style.display = select.value === 'other' ? 'block' : 'none';
 }
 
-function submitComplaint() {
-  const formData = {
-    name: document.getElementById('name').value,
-    phone: document.getElementById('phone').value,
-    email: document.getElementById('email').value,
-    area: document.getElementById('areaInput').value,
-    problem: document.getElementById('problemInput').value === 'other' ? document.getElementById('otherInput').value : document.getElementById('problemInput').value
-  };
-  // Dummy submit
-  alert(`Complaint submitted!\nName: ${formData.name}\nPhone: ${formData.phone}\nEmail: ${formData.email}\nArea: ${formData.area}\nIssue: ${formData.problem}`);
-  closeModal();
+async function submitComplaint() {
+  const name    = document.getElementById('name').value.trim();
+  const phone   = document.getElementById('phone').value.trim();
+  const email   = document.getElementById('email').value.trim();
+  const area    = document.getElementById('areaInput').value.trim();
+  const problem = document.getElementById('problemInput').value === 'other'
+    ? document.getElementById('otherInput').value.trim()
+    : document.getElementById('problemInput').value;
+
+  if (!name || !area || !problem) {
+    alert('Please fill in Name, Area, and Issue fields.');
+    return;
+  }
+
+  const submitBtn = document.querySelector('.submit');
+  submitBtn.textContent = 'Submitting…';
+  submitBtn.disabled = true;
+
+  try {
+    const res = await fetch('http://localhost:5000/api/complaints/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, phone, email, area, problem })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert('✅ Complaint submitted successfully!');
+      // Clear form
+      ['name','phone','email','areaInput','otherInput'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('problemInput').selectedIndex = 0;
+      document.getElementById('otherInput').style.display = 'none';
+      closeModal();
+    } else {
+      alert('❌ Error: ' + (data.error || 'Could not submit complaint.'));
+    }
+  } catch (err) {
+    alert('❌ Network error. Is the server running on port 5000?');
+  } finally {
+    submitBtn.textContent = 'Submit';
+    submitBtn.disabled = false;
+  }
 }
 
 // Enhanced Chart with gradients
