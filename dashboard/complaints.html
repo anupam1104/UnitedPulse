@@ -188,10 +188,40 @@
       color: rgba(255,255,255,0.6);
       margin-bottom: 10px;
     }
+
+    .ngo-select {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: white;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.82rem;
+      min-width: 130px;
+      outline: none;
+    }
+
+    .ngo-select option {
+      background: #1e1b4b;
+      color: white;
+    }
   </style>
 </head>
 
 <body>
+
+  <!-- ADMIN ROLE GUARD: Protects access to admin dashboards -->
+  <script>
+    (function () {
+      const token = localStorage.getItem('token');
+      const role = localStorage.getItem('role');
+      if (!token || role !== 'admin') {
+        alert('🔒 Management access restricted to Administrators. Please log in.');
+        window.location.href = '../alogin.html';
+        return;
+      }
+    })();
+  </script>
+
   <div class="container">
 
     <!-- SIDEBAR -->
@@ -214,7 +244,7 @@
       </a>
       <div style="margin-top: 20px;"></div>
       <a href="../dashboard/analysis.html" class="nav-item">
-        <i class="fas fa-chart-bar" style="margin-right:8px;"></i><strong>Analytics</strong>
+        </i><strong>Analytics</strong>
       </a>
       <div style="margin-top: 40px;"></div>
       <a href="../index.html" class="nav-item">
@@ -242,10 +272,11 @@
 
         <select class="filter-select" id="categoryFilter" onchange="applyFilters()">
           <option value="">All Categories</option>
-          <option value="Water Scarcity">Water Scarcity</option>
-          <option value="Healthcare">Healthcare</option>
-          <option value="Education">Education</option>
-          <option value="Roads">Roads</option>
+          <option value="water">Water Scarcity</option>
+          <option value="health">Healthcare</option>
+          <option value="education">Education</option>
+          <option value="road">Roads</option>
+          <option value="other">Others</option>
         </select>
 
         <button class="btn-refresh" onclick="loadComplaints()">
@@ -259,7 +290,7 @@
         <table>
           <thead>
             <tr>
-              <th>Complainant / Details</th>
+              <th>Complainant </th>
               <th>Date</th>
               <th>Area</th>
               <th>Issue / Category</th>
@@ -277,7 +308,8 @@
   </div>
 
   <script>
-    const API = 'http://localhost:5000/api/complaints';
+    const API = 'https://unitedpulse.onrender.com/api/complaints';
+    const NGO_OPTIONS = ['Red Cross', 'Helping Hands', 'Water Aid'];
     let allComplaints = [];
 
     // Get stored admin token (set during login)
@@ -299,6 +331,38 @@
       return status;
     }
 
+    function formatCategory(cat) {
+      const map = {
+        water: 'Water Scarcity',
+        health: 'Healthcare',
+        education: 'Education',
+        road: 'Roads',
+        electricity: 'Electricity',
+        sanitation: 'Sanitation',
+        other: 'Others'
+      };
+      return map[cat] || cat || '—';
+    }
+
+    function getCurrentNgoName(complaint) {
+      if (complaint.ngoAssigned && complaint.ngoAssigned !== 'None') return complaint.ngoAssigned;
+      if (complaint.assignedTo && typeof complaint.assignedTo === 'object' && complaint.assignedTo.name) {
+        return complaint.assignedTo.name;
+      }
+      return '';
+    }
+
+    function ngoSelectHtml(complaint) {
+      const currentNgo = getCurrentNgoName(complaint);
+      const options = [
+        '<option value="">Select NGO</option>',
+        ...NGO_OPTIONS.map(name => `<option value="${name}" ${currentNgo === name ? 'selected' : ''}>${name}</option>`)
+      ];
+      return `<select class="ngo-select" onchange="assignNgo('${complaint._id}', this)">
+        ${options.join('')}
+      </select>`;
+    }
+
     function renderTable(items) {
       const tbody = document.getElementById('complaintsBody');
       document.getElementById('countLabel').textContent =
@@ -316,7 +380,7 @@
         const extraInfo = descParts.slice(1).join(' | ');
 
         const dateStr = c.createdAt
-          ? new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })
+          ? new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
           : '—';
 
         return `
@@ -325,35 +389,75 @@
               <strong>${nameMatch || '—'}</strong>
               ${extraInfo ? `<br><span style="font-size:0.78rem;color:rgba(255,255,255,0.5);">${extraInfo}</span>` : ''}
             </td>
-            <td>${dateStr}</td>
+            <td><span style="white-space: nowrap;">${dateStr}</span></td>
             <td>${c.location || '—'}</td>
-            <td>${c.category || c.title || '—'}</td>
+            <td>${formatCategory(c.category)}</td>
             <td><span class="badge ${badgeClass(c.status)}">${badgeLabel(c.status)}</span></td>
-            <td>${c.assignedTo || '<span style="opacity:0.45;">—</span>'}</td>
+            <td>${ngoSelectHtml(c)}</td>
           </tr>`;
       }).join('');
     }
 
-    function applyFilters() {
-      const search   = document.getElementById('searchInput').value.toLowerCase();
-      const status   = document.getElementById('statusFilter').value;
-      const category = document.getElementById('categoryFilter').value;
+async function assignNgo(complaintId, selectEl) {
+  const ngoName = (selectEl.value || '').trim();
+  if (!ngoName) return;
 
-      const filtered = allComplaints.filter(c => {
-        const matchSearch = !search ||
-          (c.location  || '').toLowerCase().includes(search) ||
-          (c.category  || '').toLowerCase().includes(search) ||
-          (c.title     || '').toLowerCase().includes(search) ||
-          (c.description || '').toLowerCase().includes(search);
+  const token = getToken();
+  if (!token) {
+    alert('Please log in as admin to assign NGO.');
+    selectEl.selectedIndex = 0;
+    return;
+  }
 
-        const matchStatus   = !status   || c.status === status;
-        const matchCategory = !category || (c.category || c.title || '') === category;
+  const complaint = allComplaints.find(c => c._id === complaintId);
+  const nextStatus = complaint?.status === 'pending' ? 'in-progress' : (complaint?.status || 'in-progress');
 
-        return matchSearch && matchStatus && matchCategory;
-      });
+  try {
+    selectEl.disabled = true;
+    const res = await fetch(`${API}/${complaintId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        ngoAssigned: ngoName,
+        status: nextStatus
+      })
+    });
 
-      renderTable(filtered);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || data.message || 'Failed to assign NGO');
     }
+
+    await loadComplaints();
+  } catch (err) {
+    alert(`❌ ${err.message}`);
+    selectEl.disabled = false;
+  }
+}
+
+function applyFilters() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const status = document.getElementById('statusFilter').value;
+  const category = document.getElementById('categoryFilter').value;
+
+  const filtered = allComplaints.filter(c => {
+    const matchSearch =
+      !search ||
+      (c.location || '').toLowerCase().includes(search) ||
+      (c.title || '').toLowerCase().includes(search) ||
+      (c.description || '').toLowerCase().includes(search);
+
+    const matchStatus = !status || c.status === status;
+    const matchCategory = !category || c.category === category;
+
+    return matchSearch && matchStatus && matchCategory;
+  });
+
+  renderTable(filtered);
+}
 
     async function loadComplaints() {
       const tbody = document.getElementById('complaintsBody');
@@ -369,8 +473,8 @@
         const res = await fetch(API, { headers });
 
         if (res.status === 401 || res.status === 403) {
-          tbody.innerHTML = `<tr class="state-row"><td colspan="6">🔒 Admin login required to view complaints.<br>
-            <small>Please log in as admin and ensure your token is stored.</small></td></tr>`;
+          tbody.innerHTML = `<tr class="state-row"><td colspan="6">Complaints stored here.<br>
+            </td></tr>`;
           return;
         }
 
@@ -378,7 +482,7 @@
 
         // Support both { complaints: [...] } and direct array
         allComplaints = Array.isArray(data) ? data : (data.complaints || []);
-        applyFilters();
+        renderTable(allComplaints);
 
       } catch (err) {
         tbody.innerHTML = `<tr class="state-row"><td colspan="6">❌ Could not reach server.<br>

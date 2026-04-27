@@ -97,6 +97,21 @@
       margin-bottom: 20px;
     }
 
+    .search-box {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      margin-right: 10px;
+      outline: none;
+      min-width: 220px;
+    }
+
+    .search-box::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
     /* Table Container */
     .table {
       background: rgba(255, 255, 255, 0.08);
@@ -164,10 +179,29 @@
     td:empty {
       opacity: 0.6;
     }
+
+    .count-label {
+      margin: 8px 0 14px;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
   </style>
 </head>
 
 <body>
+
+  <!-- ADMIN ROLE GUARD: Protects access to admin dashboards -->
+  <script>
+    (function () {
+      const token = localStorage.getItem('token');
+      const role = localStorage.getItem('role');
+      if (!token || role !== 'admin') {
+        alert('🔒 Management access restricted to Administrators. Please log in.');
+        window.location.href = '../alogin.html';
+        return;
+      }
+    })();
+  </script>
 
   <!-- Sidebar -->
   <div class="container">
@@ -204,9 +238,12 @@
       <header>
         <h1>Reports Management</h1>
         <div>
-          <button class="btn" onclick="openModal()">🔍 Search</button>
+          <input id="searchInput" class="search-box" placeholder="Search area, issue, surveyor..." oninput="applyFilters()">
+          <button class="btn" onclick="loadReports(true)">🔄 Refresh</button>
         </div>
       </header>
+
+      <div class="count-label" id="countLabel"></div>
 
       <table>
         <tr>
@@ -219,31 +256,187 @@
           <th>Action</th>
           <th>NGO Assigned</th>
         </tr>
-
-        <tr>
-          <td>Anupam Mishra</td>
-          <td>Report 13</td>
-          <td>12 Apr</td>
-          <td>Haldia</td>
-          <td>Water issue</td>
-          <td>Under Work</td>
-          <td>Approved</td>
-          <td>Helping Cross</td>
-        </tr>
-
-        <tr>
-          <td>Rahul Ahuja</td>
-          <td>Report 9</td>
-          <td>10 Apr</td>
-          <td>Dum Dum</td>
-          <td>Road damage</td>
-          <td>Resolved</td>
-          <td>Approved</td>
-          <td>Helping Hands</td>
-        </tr>
+        <tbody id="reportsBody">
+          <tr>
+            <td colspan="8" style="text-align:center; opacity:0.7;">⏳ Loading reports...</td>
+          </tr>
+        </tbody>
       </table>
     </main>
   </div>
+
+  <script>
+    const API = 'https://unitedpulse.onrender.com/api/surveys/public';
+    let allReports = [];
+
+    function getToken() {
+      return localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+    }
+
+    function normalizeStatus(status) {
+      if (status === 'resolved') return 'Resolved';
+      if (status === 'in-progress') return 'Under Work';
+      return 'Pending';
+    }
+
+    function formatDate(value) {
+      if (!value) return '—';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderTable(items) {
+      const tbody = document.getElementById('reportsBody');
+      const countLabel = document.getElementById('countLabel');
+
+      countLabel.textContent = items.length
+        ? `Showing ${items.length} report${items.length === 1 ? '' : 's'}`
+        : 'No reports found';
+
+      if (!items.length) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; opacity:0.7;">📭 No reports available</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = items.map((item) => {
+        const surveyorName = item.surveyorName
+          || (item.description || '').replace('Complaint by ', '').split(' | ')[0]
+          || 'Anonymous';
+        const issue = item.issue || item.title || '—';
+        const status = normalizeStatus(item.status);
+        const ngoAssignedRaw = item.ngoAssigned || item.assignedTo?.name || item.assignedTo || 'None';
+        const createdOn = item.createdAt || item.date || item.surveyDate;
+
+        const isAssigned = (ngoAssignedRaw !== 'None' && ngoAssignedRaw !== '—' && ngoAssignedRaw !== null);
+        
+        // Define Action logic
+        const actionHtml = isAssigned 
+            ? '<span class="status" style="background: #10b981;">Approved</span>'
+            : '<span class="status" style="background: #f59e0b;">Unapproved</span>';
+            
+        // Define NGO dropdown logic
+        const ngoHtml = isAssigned
+            ? escapeHtml(ngoAssignedRaw)
+            : `<select onchange="assignNGO('${item._id}', this)" style="padding: 6px; border-radius: 6px; background: rgba(0,0,0,0.45); color: white; border: 1px solid rgba(255,255,255,0.2); outline: none;">
+                <option value="">Select NGO...</option>
+                <option value="Red Cross">Red Cross</option>
+                <option value="Helping Hands">Helping Hands</option>
+                <option value="Water Aid">Water Aid</option>
+               </select>`;
+
+        return `
+          <tr>
+            <td>${escapeHtml(surveyorName)}</td>
+            <td>${escapeHtml(item.reportName || item.title || 'Report')}</td>
+            <td>${escapeHtml(formatDate(createdOn))}</td>
+            <td>${escapeHtml(item.area || item.location || 'N/A')}</td>
+            <td>${escapeHtml(issue)}</td>
+            <td><span class="status ${item.status || 'pending'}">${escapeHtml(status)}</span></td>
+            <td>${actionHtml}</td>
+            <td>${ngoHtml}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function applyFilters() {
+      const query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+      if (!query) {
+        renderTable(allReports);
+        return;
+      }
+
+      const filtered = allReports.filter((item) => {
+        const haystack = [
+          item.surveyorName,
+          item.reportName,
+          item.title,
+          item.area,
+          item.location,
+          item.issue,
+          item.description,
+          item.category
+        ].join(' ').toLowerCase();
+        return haystack.includes(query);
+      });
+
+      renderTable(filtered);
+    }
+    
+    async function assignNGO(id, selectElement) {
+      const ngoName = selectElement.value;
+      if (!ngoName) return;
+      
+      selectElement.disabled = true;
+      try {
+        const token = getToken();
+        if (!token) throw new Error("Authentication token not found.");
+        
+        const res = await fetch(`https://unitedpulse.onrender.com/api/surveys/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status: 'in-progress', ngoAssigned: ngoName })
+        });
+        
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || res.statusText);
+        }
+        
+        loadReports(true);
+      } catch (err) {
+        console.error(err);
+        alert('Could not assign NGO: ' + err.message);
+        selectElement.disabled = false;
+        selectElement.value = '';
+      }
+    }
+
+    async function loadReports(manual = false) {
+      const tbody = document.getElementById('reportsBody');
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; opacity:0.7;">⏳ Loading reports...</td></tr>';
+      document.getElementById('countLabel').textContent = '';
+
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        const token = getToken();
+        if (token) headers.Authorization = `Bearer ${token}`;
+
+        const res = await fetch(API, { headers });
+        if (!res.ok) {
+          throw new Error(`Server responded ${res.status}`);
+        }
+
+        const data = await res.json();
+        allReports = Array.isArray(data) ? data : (data.surveys || []);
+        applyFilters();
+
+        if (manual) {
+          const btn = document.querySelector('header .btn');
+          const original = btn.textContent;
+          btn.textContent = '✅ Refreshed';
+          setTimeout(() => { btn.textContent = original; }, 1200);
+        }
+      } catch (error) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; opacity:0.7;">❌ Could not load reports. Check backend on port 5000.</td></tr>';
+      }
+    }
+
+    loadReports();
+  </script>
 </body>
 
 </html>

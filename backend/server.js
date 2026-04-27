@@ -1,10 +1,14 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const path = require("path");
+
+// Load env variables BEFORE importing routers
+dotenv.config();
+
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authroute");
-
-// Load env variables
-dotenv.config();
+const complaintRoutes = require("./routes/complaints");
+const surveyRoutes = require("./routes/surveys");
 
 // Connect to database
 connectDB();
@@ -13,6 +17,8 @@ const app = express();
 
 // Middleware to read JSON
 app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // CORS middleware for frontend HTML access
 app.use((req, res, next) => {
@@ -60,5 +66,6 @@ app.get("/api/public/home", protect, (req, res) => {
 });
 
 app.use("/api/complaints", require("./routes/complaints"));
+app.use("/api/surveys", require("./routes/surveys"));
 
 app.use("/api/test", require("./routes/testroute"));

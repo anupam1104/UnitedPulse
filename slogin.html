@@ -190,8 +190,8 @@
     <h1>Surveyor Login</h1>
     <form action="#" method="post" aria-label="Surveyor login form">
       <div>
-        <label for="username">Name</label>
-        <input id="username" name="username" type="text" placeholder="Enter your name" required />
+        <label for="email">Email ID</label>
+        <input id="email" name="email" type="email" placeholder="Enter your email address" required />
       </div>
         <div class="password-group">
           <label for="password">Password</label>
@@ -230,21 +230,29 @@
       e.preventDefault();
       const formData = new FormData(this);
       const data = Object.fromEntries(formData);
-      data.email = data.username || data.name;
       
       try {
-        const response = await fetch('http://localhost:5000/api/auth/surveyor/login', {
+        const response = await fetch('https://unitedpulse.onrender.com/api/auth/surveyor/login', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({email: data.email, password: data.password})
+          body: JSON.stringify({
+            email: data.email,
+            password: data.password,
+            securityQuestion: data.security,
+            securityAnswer: data['security-answer']
+          })
         });
         const result = await response.json();
         if (response.ok) {
           alert(`Welcome ${result.name}!`);
           localStorage.setItem('token', result.token);
-          window.location.href = 'surveyor.html';
+          localStorage.setItem('surveyorName', result.name);
+          localStorage.setItem('surveyorEmail', result.email);
+          localStorage.setItem('surveyorPhone', result.phone || '');
+          localStorage.setItem('surveyorOrg', result.organizationName || '');
+          window.location.href = 'dashboard/sdash.html';
         } else {
-          alert('Login failed: ' + result.error);
+          alert('Login failed: ' + (result.message || result.error));
         }
       } catch (err) {
         alert('Network error: ' + err.message);
@@ -256,7 +264,7 @@
       const toggle = password.nextElementSibling;
       if (password.type === 'password') {
         password.type = 'text';
-        toggle.textContent = '🙈';
+        toggle.textContent = '🔒';
       } else {
         password.type = 'password';
         toggle.textContent = '👁';

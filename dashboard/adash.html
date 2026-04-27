@@ -233,19 +233,19 @@
         <img src="../UPlogo.png">
         <h2>UnitedPulse</h2>
       </div>
-      <a href="../backend/adash.html">
+      <a href="./adash.html">
         <div class="nav-item active"><strong>Dashboard</strong></div>
       </a>
-      <a href="../dashboard/rm.html">
+      <a href="./rm.html">
         <div class="nav-item"><strong>Reports Management</strong></div>
       </a>
-      <a href="../dashboard/complaints.html">
+      <a href="./complaints.html">
         <div class="nav-item"><strong>Complaints Management</strong></div>
       </a>
-      <a href="../dashboard/ngo.html">
+      <a href="./ngo.html">
         <div class="nav-item"><strong>NGO</strong></div>
       </a>
-      <a href="../dashboard/analysis.html">
+      <a href="./analysis.html">
         <div class="nav-item"><strong>Analytics</strong></div>
       </a>
       <div style="margin-top: 20px;"></div>
@@ -266,85 +266,208 @@
       <div class="stats">
         <div class="card">
           <h4>Total</h4>
-          <p>1200</p>
+          <p id="stat-total">—</p>
         </div>
         <div class="card">
           <h4>Pending</h4>
-          <p>300</p>
+          <p id="stat-pending">—</p>
         </div>
         <div class="card">
           <h4>In Progress</h4>
-          <p>500</p>
+          <p id="stat-progress">—</p>
         </div>
         <div class="card">
           <h4>Resolved</h4>
-          <p>400</p>
+          <p id="stat-resolved">—</p>
         </div>
       </div>
 
       <!-- Table -->
       <div class="table">
-        <h3>Recent Complaints</h3>
+        <h3>Recent Complaints <span id="lastUpdated" style="font-size:0.75rem;opacity:0.6;font-weight:400;margin-left:8px;"></span> <button class="btn" style="float:right;font-size:0.75rem;padding:4px 10px;" onclick="loadDashboardData(true)">🔄 Refresh</button></h3>
 
-        <!-- Filters -->
-        <div style="margin-bottom:10px;">
-          <select>
-            <option>All Issues</option>
-            <option>Water</option>
-            <option>Health</option>
-          </select>
-
-          <select>
-            <option>All Status</option>
-            <option>Pending</option>
-            <option>Resolved</option>
-          </select>
-        </div>
-
-        <table>
-          <tr>
-            <th>Name</th>
-            <th>Area</th>
-            <th>Issue</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-
-          <tr>
-            <td>Anupam</td>
-            <td>Haldia</td>
-            <td>Water</td>
-            <td><span class="status pending">Pending</span></td>
-            <td>
-              <button class="btn approve">Approve</button>
-              <button class="btn reject">Reject</button>
-              <button class="btn assign">Assign</button>
-            </td>
-          </tr>
-
-          <tr>
-            <td>Rahul</td>
-            <td>Kolkata</td>
-            <td>Health</td>
-            <td><span class="status progress">In Progress</span></td>
-            <td>
-              <button class="btn assign">Reassign</button>
-            </td>
-          </tr>
-
+        <table id="recentComplaintsTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Area</th>
+              <th>Issue</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="5" style="text-align:center;opacity:0.6;">⏳ Loading…</td></tr>
+          </tbody>
         </table>
       </div>
 
       <!-- Insights -->
       <div class="insights">
         <h3>Smart Insights</h3>
-        <p>⚠ Water complaints highest in Haldia</p>
-        <p>📈 Health issues rising this week</p>
+        <p id="insight-1">⚠ Loading insights…</p>
+        <p id="insight-2">📈 Loading insights…</p>
       </div>
 
     </main>
   </div>
 
-</body>
+  <script>
+    const COMPLAINTS_API = 'https://unitedpulse.onrender.com/api/complaints';
+    const SURVEYS_API = 'https://unitedpulse.onrender.com/api/surveys/public';
+
+    function getToken() {
+      return localStorage.getItem('token') || '';
+    }
+
+    function statusClass(status) {
+      if (status === 'pending') return 'pending';
+      if (status === 'in-progress') return 'progress';
+      if (status === 'resolved') return 'resolved';
+      return 'pending';
+    }
+
+    function statusLabel(status) {
+      if (status === 'pending') return 'Pending';
+      if (status === 'in-progress') return 'In Progress';
+      if (status === 'resolved') return 'Resolved';
+      return status;
+    }
+
+    function formatCategory(cat) {
+      const map = {
+        water: 'Water',
+        health: 'Health',
+        education: 'Education',
+        road: 'Roads',
+        electricity: 'Electricity',
+        sanitation: 'Sanitation',
+        other: 'Others'
+      };
+      return map[cat] || cat || '—';
+    }
+
+    async function loadDashboardData(manual = false) {
+      const token = getToken();
+      if (!token) return;
+
+      try {
+        const complaintsRes = await fetch(COMPLAINTS_API, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const surveysRes = await fetch(SURVEYS_API, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!complaintsRes.ok || !surveysRes.ok) {
+          console.warn('Failed to load dashboard data:', complaintsRes.status, surveysRes.status);
+          return;
+        }
+
+        const [complaintsData, surveysData] = await Promise.all([
+          complaintsRes.json(),
+          surveysRes.json()
+        ]);
+        const complaints = Array.isArray(complaintsData) ? complaintsData : (complaintsData.complaints || []);
+        const surveys = Array.isArray(surveysData) ? surveysData : (surveysData.surveys || []);
+        const allItems = [...complaints, ...surveys];
+
+        // Update stats
+        const total = allItems.length;
+        const pending = allItems.filter(c => c.status === 'pending').length;
+        const inProgress = allItems.filter(c => c.status === 'in-progress').length;
+        const resolved = allItems.filter(c => c.status === 'resolved').length;
+
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-pending').textContent = pending;
+        document.getElementById('stat-progress').textContent = inProgress;
+        document.getElementById('stat-resolved').textContent = resolved;
+
+        // Update recent items table (show latest 5 combining both complaints and surveys)
+        const tbody = document.querySelector('#recentComplaintsTable tbody');
+        
+        // Sort all items by date instead of just slicing complaints
+        const sortedItems = [...allItems].sort((a, b) => {
+          const dateA = new Date(a.createdAt || a.surveyDate || a.submittedAt || 0);
+          const dateB = new Date(b.createdAt || b.surveyDate || b.submittedAt || 0);
+          return dateB - dateA;
+        });
+        const recent = sortedItems.slice(0, 5);
+
+        if (recent.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;opacity:0.6;">📭 No complaints yet.</td></tr>';
+        } else {
+          tbody.innerHTML = recent.map(c => {
+            const descParts = (c.description || '').split(' | ');
+            const name = descParts[0].replace('Complaint by ', '').trim() || '—';
+            const dateStr = c.createdAt
+              ? new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+              : '—';
+            return `
+              <tr>
+                <td>${name}</td>
+                <td>${c.location || '—'}</td>
+                <td>${formatCategory(c.category)}</td>
+                <td><span class="status ${statusClass(c.status)}">${statusLabel(c.status)}</span></td>
+                <td>${dateStr}</td>
+              </tr>`;
+          }).join('');
+        }
+
+        // Simple insights
+        if (complaints.length > 0) {
+          const areaCounts = {};
+          complaints.forEach(c => {
+            const area = c.location || 'Unknown';
+            areaCounts[area] = (areaCounts[area] || 0) + 1;
+          });
+          const topArea = Object.entries(areaCounts).sort((a, b) => b[1] - a[1])[0];
+          document.getElementById('insight-1').textContent = topArea
+            ? `⚠ Most complaints from ${topArea[0]} (${topArea[1]} reports)`
+            : '⚠ No area data available';
+
+          const catCounts = {};
+          complaints.forEach(c => {
+            const cat = c.category || 'Unknown';
+            catCounts[cat] = (catCounts[cat] || 0) + 1;
+          });
+          const topCat = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0];
+          document.getElementById('insight-2').textContent = topCat
+            ? `📈 Top issue: ${formatCategory(topCat[0])} (${topCat[1]} complaints)`
+            : '📈 No category data available';
+        } else {
+          document.getElementById('insight-1').textContent = '⚠ No complaints data yet';
+          document.getElementById('insight-2').textContent = '📈 Submit complaints to see insights';
+        }
+
+        // Update last refreshed timestamp
+        const now = new Date();
+        document.getElementById('lastUpdated').textContent = `Updated ${now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+
+        if (manual) {
+          const btn = document.querySelector('.table .btn');
+          const originalText = btn.textContent;
+          btn.textContent = '✅ Refreshed';
+          setTimeout(() => btn.textContent = originalText, 1500);
+        }
+
+      } catch (err) {
+        console.error('Error loading dashboard:', err);
+      }
+    }
+
+    // Initial load
+    loadDashboardData();
+
+    // Auto-refresh every 30 seconds for real-time updates
+    setInterval(() => loadDashboardData(), 30000);
+  </script>
 
 </html>

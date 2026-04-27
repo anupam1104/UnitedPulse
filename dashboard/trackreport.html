@@ -156,10 +156,29 @@ td:has(> span:empty),
 td:empty {
   opacity: 0.6;
 }
+
+/* Loading status */
+.state-row td {
+  text-align: center;
+  padding: 40px;
+  color: rgba(255,255,255,0.5);
+  font-size: 1rem;
+}
   </style>
 </head>
 
 <body>
+  <!-- TOKEN GUARD: protects access to the tracker -->
+  <script>
+    (function () {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('🔒 Surveyor access only. Please log in.');
+        window.location.href = '../slogin.html';
+        return;
+      }
+    })();
+  </script>
   <!-- Sidebar -->
   <div class="container">  
   <aside class="sidebar">
@@ -193,27 +212,85 @@ td:empty {
   </div>
 </header>
 
-<table>
-  <tr>
-    <th>Report Name</th>
-    <th>Date</th>
-    <th>Status</th>
-    <th>NGO Assigned</th>
-  </tr>
-
-  <tr>
-    <td>Water issue - Haldia</td>
-    <td>12 Apr</td>
-    <td>Under Review</td>
-    <td>—</td>
-  </tr>
-
-  <tr>
-    <td>Road damage</td>
-    <td>10 Apr</td>
-    <td>Resolved</td>
-    <td>Helping Hands</td>
-  </tr>
+<table id="reportsTable">
+  <thead>
+    <tr>
+      <th>Report Name</th>
+      <th>Date</th>
+      <th>Status</th>
+      <th>NGO Assigned</th>
+    </tr>
+  </thead>
+  <tbody id="trackTableBody">
+    <tr class="state-row"><td colspan="4">⏳ Loading your submissions…</td></tr>
+  </tbody>
 </table>
 
+</main>
+</div>
+
+<script>
+  function escapeHtml(unsafe) {
+    if (!unsafe) return '';
+    return unsafe.toString()
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function getStatusBadge(status) {
+    const s = (status || '').toLowerCase();
+    if (s === 'resolved' || s === 'completed') return '<span class="status resolved">Resolved</span>';
+    if (s === 'in-progress' || s === 'under work') return '<span class="status progress">In Progress</span>';
+    return '<span class="status review">Under Review</span>';
+  }
+
+  async function loadMyReports() {
+    const tbody = document.getElementById('trackTableBody');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('https://unitedpulse.onrender.com/api/surveys/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (!res.ok) throw new Error('Failed to load surveys');
+      const data = await res.json();
+      const surveys = data.surveys || data || [];
+
+      if (surveys.length === 0) {
+        tbody.innerHTML = '<tr class="state-row"><td colspan="4">📭 No reports submitted yet.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = surveys.map(s => {
+        const title = s.title || s.reportName || s.issue || 'Survey Report';
+        const dateStr = formatDate(s.createdAt || s.date || s.surveyDate);
+        const ngoStr = (s.ngoAssigned && s.ngoAssigned !== 'None') ? s.ngoAssigned : '—';
+        
+        return `
+          <tr>
+            <td>${escapeHtml(title)}</td>
+            <td>${escapeHtml(dateStr)}</td>
+            <td>${getStatusBadge(s.status)}</td>
+            <td>${escapeHtml(ngoStr)}</td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error(err);
+      tbody.innerHTML = '<tr class="state-row"><td colspan="4" style="color:#ef4444;">❌ Failed to load tracking data. Make sure you are logged in.</td></tr>';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadMyReports);
+</script>
+</body>
 </html>

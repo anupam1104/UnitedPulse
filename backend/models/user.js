@@ -32,14 +32,48 @@ const userSchema = new mongoose.Schema({
   phone: {
     type: String,
     trim: true
+  },
+  dob: {
+    type: Date
+  },
+  address: {
+    type: String,
+    trim: true
+  },
+  organizationName: {
+    type: String,
+    trim: true
+  },
+  organizationContact: {
+    type: String,
+    trim: true
+  },
+  organizationEmail: {
+    type: String,
+    trim: true,
+    lowercase: true
+  },
+  organizationAddress: {
+    type: String,
+    trim: true
+  },
+  securityQuestion: {
+    type: String,
+    trim: true
+  },
+  securityAnswer: {
+    type: String,
+    trim: true
+  },
+  passkey: {
+    type: String,
+    trim: true
   }
 }, { timestamps: true });
 
 // Hash password before saving
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    next();
-  }
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });

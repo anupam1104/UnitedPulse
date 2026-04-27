@@ -190,6 +190,18 @@ header h1 { margin: 0; }
 
 <body>
 
+  <!-- TOKEN GUARD: runs before anything renders -->
+  <script>
+    (function () {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('🔒 Surveyor access only. Please log in.');
+        window.location.href = '../slogin.html';
+        return;
+      }
+    })();
+  </script>
+
 <div class="app">
 
 <!-- Sidebar - original -->
@@ -238,21 +250,18 @@ header h1 { margin: 0; }
 <!-- Main - original + chart -->
 <div class="main">
 
-  <!-- Recent - original -->
   <div class="card">
-    <h3>Recent Surveys</h3>
-    <ul class="list">
-      <li>Water issue - Haldia <span class="status pending">Under Review</span></li>
-      <li>Road damage - Sector 2 <span class="status approved">Approved</span></li>
-      <li>School condition - Block B <span class="status rejected">Rejected</span></li>
+    <h3>Recent Surveys <button onclick="loadSurveys()" style="float: right; background: none; border: none; color: var(--text-secondary); cursor: pointer;"><i class="fas fa-sync"></i></button></h3>
+    <ul class="list" id="surveyList">
+      <li style="opacity: 0.6; text-align: center;">Loading surveys...</li>
     </ul>
   </div>
 
   <!-- Impact + simple chart -->
   <div class="card">
     <h3>Your Impact</h3>
-    <p>5 problems solved</p>
-    <p>2 water issues resolved</p>
+    <p id="impactSolvedCount">0 problems solved</p>
+    <p id="impactWaterCount">0 water issues resolved</p>
     <canvas id="statusChart" width="200" height="200"></canvas>
   </div>
 
@@ -330,7 +339,7 @@ function loadDraft() {
   }
 }
 
-function submitReport() {
+async function submitReport() {
   const formData = new FormData();
   const fields = ['reportName', 'surveyorName', 'surveyDate', 'areaSurveyed', 'problemsNoticed', 'description'];
   let valid = true;
@@ -353,12 +362,119 @@ function submitReport() {
     formData.append('images', file);
   });
 
-  alert('Field report submitted for approval!');
-  closeModal();
-  localStorage.removeItem('surveyDraft');
-  // Simulate form reset
-  document.querySelectorAll('#modal input, #modal textarea').forEach(el => el.value = '');
-  document.getElementById('imageUpload').value = '';
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch('https://unitedpulse.onrender.com/api/surveys/create', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Failed to submit report');
+    }
+
+    alert('Field report submitted for approval!');
+    closeModal();
+    localStorage.removeItem('surveyDraft');
+    document.querySelectorAll('#modal input, #modal textarea').forEach(el => el.value = '');
+    document.getElementById('imageUpload').value = '';
+    document.getElementById('imagePreview').innerHTML = '';
+    // Reload surveys to show the new one
+    loadSurveys();
+  } catch (error) {
+    alert('Could not submit report. ' + error.message);
+  }
+}
+
+// Function to fetch and display recent surveys dynamically
+async function loadSurveys() {
+  try {
+    const list = document.getElementById('surveyList');
+    list.innerHTML = '<li style="opacity: 0.6; text-align: center;">Loading...</li>';
+    
+    // Fetch ONLY my personal surveys
+    const token = localStorage.getItem('token');
+    const res = await fetch('https://unitedpulse.onrender.com/api/surveys/me', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!res.ok) throw new Error('Failed to load surveys');
+    
+    const data = await res.json();
+    const surveys = data.surveys || data || [];
+    
+    // Stats update
+    const underReview = surveys.filter(s => s.status === 'pending' || s.status === 'in-progress' || s.status === 'Under Work' || s.status === 'Pending').length;
+    const approvedCount = surveys.filter(s => s.status === 'resolved' || s.status === 'completed' || s.status === 'Resolved').length;
+    const rejectedCount = surveys.filter(s => s.status === 'rejected' || s.status === 'Rejected').length;
+    
+    // Dynamically calculate logically unique mapping areas
+    const uniqueAreas = new Set(
+      surveys
+        .map(s => (s.area || s.location || s.areaSurveyed || '').trim().toLowerCase())
+        .filter(area => area !== '' && area !== 'n/a')
+    ).size;
+
+    // Update stats UI dynamically if possible (targeting the 3rd and 4th card p tags)
+    const statsCards = document.querySelectorAll('.stats .card p');
+    if (statsCards.length >= 4) {
+      statsCards[0].textContent = surveys.length; // Total submitted
+      statsCards[1].textContent = uniqueAreas; // Areas Covered
+      statsCards[2].textContent = underReview; // Under Review
+      statsCards[3].textContent = approvedCount; // Approved
+    }
+
+    if (surveys.length === 0) {
+      list.innerHTML = '<li style="opacity: 0.6; text-align: center;">No surveys found.</li>';
+      return;
+    }
+
+    // Render recently submitted surveys in the list
+    list.innerHTML = surveys.slice(0, 5).map(s => {
+      let statusClass = 'pending';
+      let statusText = 'Under Review';
+      const lowercaseStatus = (s.status || '').toLowerCase();
+      
+      if (lowercaseStatus === 'resolved' || lowercaseStatus === 'completed') {
+        statusClass = 'approved';
+        statusText = 'Approved';
+      } else if (lowercaseStatus === 'rejected') {
+        statusClass = 'rejected';
+        statusText = 'Rejected';
+      } else if (lowercaseStatus === 'in-progress') {
+        statusClass = 'pending';
+        statusText = 'In Progress';
+      }
+      
+      // Attempt to find issue and location
+      const title = s.title || s.reportName || s.issue || 'Survey Report';
+      const loc = s.area || s.location || 'Unknown location';
+      
+      return `<li>${title} - ${loc} <span class="status ${statusClass}">${statusText}</span></li>`;
+    }).join('');
+
+    // Update Your Impact metrics
+    const problemsSolved = surveys.filter(s => {
+      const lowercaseStatus = (s.status || '').toLowerCase();
+      return lowercaseStatus === 'resolved' || lowercaseStatus === 'completed';
+    });
+    
+    document.getElementById('impactSolvedCount').textContent = `${problemsSolved.length} problem${problemsSolved.length === 1 ? '' : 's'} solved`;
+
+    const waterIssues = problemsSolved.filter(s => (s.category || '').toLowerCase() === 'water');
+    document.getElementById('impactWaterCount').textContent = `${waterIssues.length} water issue${waterIssues.length === 1 ? '' : 's'} resolved`;
+
+    // Update chart
+    updateChart(underReview, approvedCount, rejectedCount);
+
+  } catch (err) {
+    console.error('Error fetching surveys:', err);
+    document.getElementById('surveyList').innerHTML = '<li style="color: #ef4444; font-size: 0.9em; text-align: center;">Failed to load surveys. Ensure backend is running.</li>';
+  }
 }
 
 document.getElementById('imageUpload').addEventListener('change', function() {
@@ -367,23 +483,38 @@ document.getElementById('imageUpload').addEventListener('change', function() {
 });
 
 // Simple chart
-const ctx = document.getElementById('statusChart').getContext('2d');
-new Chart(ctx, {
-  type: 'pie',
-  data: {
-    labels: ['Review', 'Approved', 'Rejected'],
-    datasets: [{ data: [3,7,2], backgroundColor: ['#f59e0b', '#10b981', '#ef4444'] }]
-  },
-  options: { 
-    responsive: true,
-    plugins: {
-      legend: {
-        labels: {
-          color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary') || '#f6f9ff'
+let statusChartObj = null;
+
+function updateChart(reviewCount, approvedCount, rejectedCount) {
+  const ctx = document.getElementById('statusChart').getContext('2d');
+  
+  if (statusChartObj) {
+    statusChartObj.data.datasets[0].data = [reviewCount, approvedCount, rejectedCount];
+    statusChartObj.update();
+  } else {
+    statusChartObj = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['Review', 'Approved', 'Rejected'],
+        datasets: [{ data: [reviewCount, approvedCount, rejectedCount], backgroundColor: ['#f59e0b', '#10b981', '#ef4444'] }]
+      },
+      options: { 
+        responsive: true,
+        plugins: {
+          legend: {
+            labels: {
+              color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary') || '#f6f9ff'
+            }
+          }
         }
       }
-    }
+    });
   }
+}
+
+// Ensure surveys are loaded on startup
+document.addEventListener('DOMContentLoaded', () => {
+    loadSurveys();
 });
 </script>
 

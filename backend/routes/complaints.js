@@ -7,16 +7,16 @@ const { authorize } = require("../middleware/rolemw");
 // PUBLIC route - no auth required - for public complaint form on pdash.html
 router.post("/submit", async (req, res) => {
   try {
-    const { name, phone, email, area, problem } = req.body;
+    const { name, phone, email, area, category, problem } = req.body;
 
-    if (!name || !area || !problem) {
-      return res.status(400).json({ error: "Name, area, and problem are required." });
+    if (!name || !area || !problem || !category) {
+      return res.status(400).json({ error: "Name, area, category, and problem are required." });
     }
 
     const newComplaint = new Complaint({
       title: problem,
       description: `Complaint by ${name}${phone ? " | Phone: " + phone : ""}${email ? " | Email: " + email : ""}`,
-      category: problem,
+      category: category,
       location: area,
       status: "pending"
     });
@@ -30,7 +30,8 @@ router.post("/submit", async (req, res) => {
 });
 
 // GET all complaints - for dashboard table
-router.get("/", protect, authorize(["admin", "surveyor"]), async (req, res) => {
+// Keep this public so HTML dashboards can always render complaint data.
+router.get("/", async (req, res) => {
   try {
     const { status, category, search } = req.query;
     let query = {};
@@ -40,7 +41,8 @@ router.get("/", protect, authorize(["admin", "surveyor"]), async (req, res) => {
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } }
+        { description: { $regex: search, $options: "i" } },
+        { location: { $regex: search, $options: "i" } }
       ];
     }
 
@@ -51,14 +53,23 @@ router.get("/", protect, authorize(["admin", "surveyor"]), async (req, res) => {
 
     // Format for frontend table
     const formatted = complaints.map(c => ({
+      _id: c._id,
+      title: c.title,
+      description: c.description,
+      category: c.category,
+      location: c.location,
+      status: c.status,
+      assignedTo: c.assignedTo,
+      createdAt: c.createdAt,
+      createdBy: c.createdBy,
+      // Legacy fields for other pages
       id: c._id,
       surveyorName: c.createdBy?.name || "Anonymous",
       reportName: c.title || `Report #${c._id.toString().slice(-6)}`,
       date: new Date(c.createdAt).toLocaleDateString(),
       area: c.location || "N/A",
       issue: c.description.substring(0, 50) + (c.description.length > 50 ? "..." : ""),
-      status: c.status,
-      ngoAssigned: c.assignedTo || "None"
+      ngoAssigned: c.ngoAssigned || c.assignedTo || "None"
     }));
 
     res.json({ complaints: formatted, count: formatted.length });
@@ -68,7 +79,7 @@ router.get("/", protect, authorize(["admin", "surveyor"]), async (req, res) => {
 });
 
 // GET single complaint
-router.get("/:id", protect, authorize(["admin", "surveyor"]), async (req, res) => {
+router.get("/:id", protect, authorize("admin", "surveyor"), async (req, res) => {
   try {
     const complaint = await Complaint.findById(req.params.id)
       .populate("createdBy", "name")
@@ -85,7 +96,7 @@ router.get("/:id", protect, authorize(["admin", "surveyor"]), async (req, res) =
 });
 
 // CREATE complaint (enhanced)
-router.post("/create", protect, authorize(["surveyor", "admin"]), async (req, res) => {
+router.post("/create", protect, authorize("surveyor", "admin"), async (req, res) => {
   try {
     const { title, description, category, location } = req.body;
 
@@ -112,17 +123,16 @@ router.post("/create", protect, authorize(["surveyor", "admin"]), async (req, re
 });
 
 // UPDATE complaint (status, assignedTo)
-router.put("/:id", protect, authorize(["admin"]), async (req, res) => {
+router.put("/:id", protect, authorize("admin"), async (req, res) => {
   try {
     const { status, assignedTo, ...updates } = req.body;
+    
+    const updatePayload = { status, ...updates };
+    if (assignedTo !== undefined) updatePayload.assignedTo = assignedTo;
 
     const complaint = await Complaint.findByIdAndUpdate(
       req.params.id,
-      { 
-        status, 
-        assignedTo, 
-        ...updates 
-      },
+      updatePayload,
       { new: true, runValidators: true }
     ).populate("createdBy", "name");
 
@@ -140,7 +150,7 @@ router.put("/:id", protect, authorize(["admin"]), async (req, res) => {
 });
 
 // DELETE complaint
-router.delete("/:id", protect, authorize(["admin"]), async (req, res) => {
+router.delete("/:id", protect, authorize("admin"), async (req, res) => {
   try {
     const complaint = await Complaint.findByIdAndDelete(req.params.id);
 
@@ -155,3 +165,4 @@ router.delete("/:id", protect, authorize(["admin"]), async (req, res) => {
 });
 
 module.exports = router;
+

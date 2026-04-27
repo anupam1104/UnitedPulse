@@ -175,15 +175,63 @@ header h1 { margin: 0; }
   <div class="avatar" id="avatar"></div>
   <script>
 function getInitials(name) {
+  if (!name || typeof name !== 'string') return 'S';
   return name
     .split(" ")
+    .filter(word => word.length > 0)
     .map(word => word[0])
     .join("")
     .toUpperCase();
 }
-const userName = "Anupam Mishra"; // later from backend
+
+// Fallback values from localStorage
+let userName = localStorage.getItem('surveyorName') || 'Surveyor';
+let userEmail = localStorage.getItem('surveyorEmail') || '-';
+let userPhone = localStorage.getItem('surveyorPhone') || '-';
+let userOrg = localStorage.getItem('surveyorOrg') || '-';
+
 const initials = getInitials(userName);
 document.getElementById("avatar").innerText = initials;
+
+// Update table cells after DOM is fully parsed
+window.addEventListener('DOMContentLoaded', function() {
+  document.getElementById("name").innerText = userName;
+  document.getElementById("email").innerText = userEmail;
+  document.getElementById("phone").innerText = userPhone;
+  document.getElementById("organization").innerText = userOrg;
+
+  // Fetch fresh profile data from backend using the stored token
+  const token = localStorage.getItem('token');
+  if (token) {
+    fetch('https://unitedpulse.onrender.com/api/auth/me', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(res => res.ok ? res.json() : null)
+    .then(profile => {
+      if (profile) {
+        const freshName = profile.name || userName;
+        const freshEmail = profile.email || userEmail;
+        const freshPhone = profile.phone || userPhone;
+        const freshOrg = profile.organizationName || userOrg;
+
+        document.getElementById("avatar").innerText = getInitials(freshName);
+        document.getElementById("name").innerText = freshName;
+        document.getElementById("email").innerText = freshEmail;
+        document.getElementById("phone").innerText = freshPhone;
+        document.getElementById("organization").innerText = freshOrg;
+
+        // Update localStorage with fresh data
+        localStorage.setItem('surveyorName', freshName);
+        localStorage.setItem('surveyorEmail', freshEmail);
+        localStorage.setItem('surveyorPhone', freshPhone);
+        localStorage.setItem('surveyorOrg', freshOrg);
+      }
+    })
+    .catch(() => {
+      // Silently ignore network errors and keep localStorage fallback
+    });
+  }
+});
   </script>
 
 <!-- Profile Card -->
@@ -193,19 +241,19 @@ document.getElementById("avatar").innerText = initials;
   <table class="info-table">
     <tr>
       <th>Name</th>
-      <td id="name">Anupam Mishra</td>
+      <td id="name">Surveyor</td>
     </tr>
     <tr>
       <th>Email</th>
-      <td id="email">anupam@email.com</td>
+      <td id="email">-</td>
     </tr>
     <tr>
       <th>Phone</th>
-      <td id="phone">9876543210</td>
+      <td id="phone">-</td>
     </tr>
     <tr>
       <th>Organization Belonging</th>
-      <td>xyz</td>
+      <td id="organization">-</td>
     </tr>
     <tr>
       <th>Role</th>

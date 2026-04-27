@@ -147,13 +147,9 @@
       opacity: 1;
     }
 
-    input[type="password"] + .toggle-password::after {
-      content: "👁";
-    }
+   
 
-    input[type="text"] + .toggle-password::after {
-      content: "🙈";
-    }
+
 
     .button-row {
       display: grid;
@@ -303,25 +299,35 @@
       e.preventDefault();
       const formData = new FormData(this);
       const data = Object.fromEntries(formData);
-      data.phoneNumber = data.mobile;
-      data.organizationName = data['org-name'];
-      data.organizationalEmail = data['org-email'];
-      delete data.mobile;
-      delete data['org-name'];
-      delete data['org-email'];
-      
+
+      // Map frontend field names to backend expected names
+      const payload = {
+        name: data.name,
+        dob: data.dob,
+        email: data.email,
+        phone: data.mobile,
+        address: data.address,
+        organizationName: data['org-name'],
+        organizationContact: data['org-contact'],
+        organizationEmail: data['org-email'],
+        organizationAddress: data['org-address'],
+        password: data.password,
+        securityQuestion: data.security,
+        securityAnswer: data['security-answer']
+      };
+
       try {
-        const response = await fetch('http://localhost:5000/api/auth/administrator/signup', {
+        const response = await fetch('https://unitedpulse.onrender.com/api/auth/administrator/signup', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(data)
+          body: JSON.stringify(payload)
         });
         const result = await response.json();
         if (response.ok) {
-          alert(`Success! Passkey: ${result.passkey || 'sent to email'}`);
+          alert(`Success! Your passkey is: ${result.passkey}\n\nPlease save this passkey securely. You will need it to log in.`);
           window.location.href = 'alogin.html';
         } else {
-          alert('Error: ' + result.error);
+          alert('Error: ' + result.message);
         }
       } catch (err) {
         alert('Network error: ' + err.message);
@@ -333,7 +339,7 @@
       const toggle = password.nextElementSibling;
       if (password.type === 'password') {
         password.type = 'text';
-        toggle.textContent = '🙈';
+        toggle.textContent = '🔒';
       } else {
         password.type = 'password';
         toggle.textContent = '👁';

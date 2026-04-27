@@ -1,10 +1,12 @@
 const mongoose = require('mongoose');
 
-// Load env variables
+const DB_NAME = process.env.MONGO_DB_NAME || 'test';
+
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    const uri = process.env.MONGO_URI;
+    const conn = await mongoose.connect(uri, { dbName: DB_NAME });
+    console.log(`MongoDB Connected: ${conn.connection.host} | Database: ${DB_NAME}`);
   } catch (error) {
     console.error('Database connection error:', error.message);
     process.exit(1);

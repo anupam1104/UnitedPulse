@@ -2,43 +2,36 @@
 
 Local social groups and NGOs collect a lot of important information about community needs through paper surveys and field reports. However, this valuable data is often scattered across different places, making it hard to see the biggest problems clearly.
 
-## Key Features & Progress Summary
+## Solutions
+UnitedPulse is a centralized platform that transforms raw community data into actionable insights through a structured three-stage system:
+1. Surveyors collect data from the ground level and submit reports based on real-world issues.
+2. Administrators review these submissions, verify their authenticity, and assign them as actionable tasks.
+3. Public Users can view ongoing and completed work through a transparent dashboard and also raise complaints or concerns.
+        This creates a seamless flow from data collection → verification → action → public visibility, ensuring accountability and better decision-making.
 
-All keypoints and TODO progress from project .md files have been consolidated here:
+## System workflow
+1. Surveyor collects and submits field data
+2. Administrator reviews and assigns tasks
+3. Work status is updated and reflected on the dashboard
+4. Public users can track progress and raise complaints
 
-### Backend Development
-**Auth Implementation (from TODO-BACKEND.md):**
-- ✅ Installed jsonwebtoken dependency
-- ✅ Updated `backend/controllers/authcontrol.js` (signup hashing, loginUser with JWT)
-- ✅ Updated `backend/routes/authroute.js` (/login route)
-- ✅ Updated `backend/server.js` (mounted auth routes)
-- ⏳ Test signup/login endpoints
-- ⏳ Frontend integration check
+## Features
+Role-based Authentication (Surveyor / Admin)
+Survey Submission System
+Admin Review & Task Assignment
+Public Dashboard for transparency
+Complaint Registration by users
 
-### Frontend Updates - Password Visibility Toggle (from TODO-PASSWORD-TOGGLE.md)
-- ✅ Updated `asignup.html`, `alogin.html`, `ssignup.html`, `slogin.html` with eye icon toggles
-- ⏳ Test toggles work
-- ⏳ Completion
+## Impact
+Centralizes scattered community data
+Improves transparency and accountability
+Enables faster identification and resolution of issues
+Bridges the gap between organizations and the public
 
-### Dashboard Enhancements
+## Author
+1. Anupam Mishra
+2. Baidantik Das
+3. Binay Bhushan Routray
 
-**Background Updates:**
-- **adash.html (TODO-BG-UPDATE.md):** ✅ Updated to bg4.jpeg background - Complete
-- **pdash.html (TODO.md):** ✅ Applied bg4.jpeg full-screen fixed background with dark theme overlay, sidebar gradient, preserved all features - Complete
-
-**pdash.html Styling (TODO-DASHBOARD-STYLE.md):**
-- ✅ Theme toggle (HTML/JS/CSS/localStorage)
-- ✅ Vibrant gradients, glassmorphism, modern typography (Inter/Poppins), Font Awesome icons
-- ✅ Hero header, stats cards, charts, recent reports, modal, responsive design, animations
-- ✅ Inline styles updated - Fully enhanced!
-
-**sdash.html Refinements (TODO-REFINEMENTS.md):**
-- ✅ CSS variables (higher card opacity)
-- ✅ Modal background
-- ✅ Removed logout button white background
-- ✅ Improved text visibility colors
-- ✅ Test and complete - Mostly done
-
-
-
-**Status:** All keypoints centralized. Project shows strong frontend progress (dashboards complete), backend auth mostly done (needs testing).
+## Design & Visualisation
+1. Nandini Singh

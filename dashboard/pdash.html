@@ -433,10 +433,10 @@ color: whitesmoke;
     <input id="areaInput" placeholder="Area / Location *" required>
     <select id="problemInput" onchange="toggleOther()" required>
       <option value="">Select Issue *</option>
-      <option>Water Scarcity</option>
-      <option>Healthcare</option>
-      <option>Education</option>
-      <option>Roads</option>
+      <option value="water">Water Scarcity</option>
+      <option value="health">Healthcare</option>
+      <option value="education">Education</option>
+      <option value="road">Roads</option>
       <option value="other">Others</option>
     </select>
     <input id="otherInput" placeholder="Specify other issue *" style="display:none;">
@@ -467,15 +467,16 @@ function toggleOther() {
 }
 
 async function submitComplaint() {
-  const name    = document.getElementById('name').value.trim();
-  const phone   = document.getElementById('phone').value.trim();
-  const email   = document.getElementById('email').value.trim();
-  const area    = document.getElementById('areaInput').value.trim();
-  const problem = document.getElementById('problemInput').value === 'other'
+  const name     = document.getElementById('name').value.trim();
+  const phone    = document.getElementById('phone').value.trim();
+  const email    = document.getElementById('email').value.trim();
+  const area     = document.getElementById('areaInput').value.trim();
+  const category = document.getElementById('problemInput').value;
+  const problem  = category === 'other'
     ? document.getElementById('otherInput').value.trim()
-    : document.getElementById('problemInput').value;
+    : category;
 
-  if (!name || !area || !problem) {
+  if (!name || !area || !problem || !category) {
     alert('Please fill in Name, Area, and Issue fields.');
     return;
   }
@@ -485,10 +486,10 @@ async function submitComplaint() {
   submitBtn.disabled = true;
 
   try {
-    const res = await fetch('http://localhost:5000/api/complaints/submit', {
+    const res = await fetch('https://unitedpulse.onrender.com/api/complaints/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, phone, email, area, problem })
+      body: JSON.stringify({ name, phone, email, area, category, problem })
     });
 
     const data = await res.json();

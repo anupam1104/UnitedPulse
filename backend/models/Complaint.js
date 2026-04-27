@@ -14,6 +14,8 @@ const complaintSchema = new mongoose.Schema(
 
     category: {
       type: String,
+      enum: ["water", "health", "sanitation", "education", "road", "electricity", "other"],
+      default: "other",
     },
 
     location: {
@@ -27,17 +29,25 @@ const complaintSchema = new mongoose.Schema(
     },
 
     assignedTo: {
-      type: String, // NGO name for now (simple MVP)
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Surveyor",
       default: null,
+    },
+
+    // NGO assignment selected by admin from complaints dashboard
+    ngoAssigned: {
+      type: String,
+      trim: true,
+      default: "",
     },
 
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // optional (if you want user linking later)
+      ref: "Admin",
     },
   },
   {
-    timestamps: true, // adds createdAt & updatedAt
+    timestamps: true,
   }
 );
 
